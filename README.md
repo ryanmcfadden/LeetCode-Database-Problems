@@ -30,8 +30,26 @@ For the examples in this cheat sheet, we'll assume that Pandas has already been 
   + df.at[0, "Age"]
 * Access a single value using row and column positions (the value in the first row and second column).
   + df.iat[0, 1]
+* Select rows where values in the Salary column are not present in another DataFrame's Salary column.
+  + df[~df["Salary"].isin(df2["Salary"])]
+* Check whether values in the Salary column exist in a specified list.
+  + df["Salary"].isin([40000, 50000])
+* Exclude rows where the Salary column contains specified values.
+  + df[~df["Salary"].isin([40000, 50000])]
 
 **Note:** The key difference between .loc[] and .iloc[] is that .loc[] uses row and column labels, whereas .iloc[] uses integer positions. Similarly, .at[] and .iat[] are designed for accessing individual values using labels and positions, respectively.
+
+## Comparing Consecutive Rows
+* Shift values in the Salary column down by one row, allowing comparison with the previous value.
+  + df["Salary"].shift(1)
+* Identify rows where the Salary value matches the previous row.
+  + df["Salary"] == df["Salary"].shift(1)
+* Identify rows where the Salary value matches the previous two rows, indicating at least three consecutive identical values.
+  + (df["Salary"] == df["Salary"].shift(1)) & (df["Salary"] == df["Salary"].shift(2))
+* Identify where consecutive values change.
+  + df["Salary"].ne(df["Salary"].shift())
+* Assign a unique group number to each consecutive sequence of identical values.
+  + df["Salary"].ne(df["Salary"].shift()).cumsum()
 
 ## Cleaning and Modifying Data
 * **Remove duplicate rows** from the entire DataFrame.
@@ -40,6 +58,8 @@ For the examples in this cheat sheet, we'll assume that Pandas has already been 
   + df["Salary"].drop_duplicates()
 * **Remove duplicate rows based on the Salary column**, keeping the first occurrence.
   + df.drop_duplicates(subset=["Salary"])
+* **Remove duplicate rows based on the Salary column in place**, keeping the first occurrence.
+  + df.drop_duplicates(subset="Salary", keep="first", inplace=True)
 * **Rename a column** from Salary to Income.
   + df.rename(columns={"Salary": "Income"})
 * **Remove the Salary column** from the DataFrame.
@@ -75,17 +95,51 @@ For the examples in this cheat sheet, we'll assume that Pandas has already been 
 
 **Note:** sort_values() and sort_index() return a new DataFrame by default without modifying the original. To save the sorted result, assign it back to df, for example: df = df.sort_values("Salary").
 
+## Grouping and Aggregating Data
+* **Group rows by Department**, allowing operations to be performed separately on each department.
+  + df.groupby("Department")
+* **Calculate multiple statistics** for the Salary column, such as the minimum and maximum salaries.
+  + df["Salary"].agg(["min", "max"])
+* **Count the number of employees in each city**, based on how frequently each value appears in the City column.
+  + df["City"].value_counts()
+* **Calculate the total salary for each department** by grouping employees by Department and summing their salaries.
+  + df.groupby("Department")["Salary"].sum()
+* **Calculate the average salary for each department**.
+  + df.groupby("Department")["Salary"].mean()
+* **Count the number of non-null salary values in each department**.
+  + df.groupby("Department")["Salary"].count()
+* **Calculate multiple statistics for each department**, such as the average and maximum salaries.
+  + df.groupby("Department")["Salary"].agg(["mean", "max"])
+* **Find the highest salary within each department**, returning the maximum salary for every employee in that department.
+  + df.groupby("Department")["Salary"].transform("max")
+* **Select employees earning the highest salary in their department**, including employees tied for the highest salary.
+  + df[df["Salary"] == df.groupby("Department")["Salary"].transform("max")]
+* **Rank salaries within each department in descending order**, assigning the same rank to equal salaries without skipping subsequent ranks.
+  + df.groupby("Department")["Salary"].rank(method="dense", ascending=False)
+* **Select the highest-paid employees in each department** using dense ranking.
+  + df[df.groupby("Department")["Salary"].rank(method="dense", ascending=False) == 1]
+
+**Note:** The key difference between .agg() and .transform() is that .agg() typically produces a summary for each group, whereas .transform() returns results aligned with the original rows. This makes .transform() particularly useful when filtering or comparing individual records against group-level statistics.
+
 ## Merging Data Frames
 Assume we have a second DataFrame named df2, which shares a common column, Name, with df. We can use pd.merge() to combine these DataFrames based on matching values in this column.
 
 Merging DataFrames using different join types:
-+ Inner Join (how="inner"): Returns only rows where Name exists in both df and df2.
-  * pd.merge(df, df2, on="Name", how="inner")
-+ Left Join (how="left"): Returns all rows from df, including matching data from df2. If no match is found, the corresponding values from df2 will be NaN.
-  * pd.merge(df, df2, on="Name", how="left")
-+ Right Join (how="right"): Returns all rows from df2, including matching data from df. If no match is found, the corresponding values from df will be NaN.
-  * pd.merge(df, df2, on="Name", how="right")
-+ Outer Join (how="outer"): Returns all rows from both df and df2, regardless of whether a match exists. Missing values are filled with NaN.
-  * pd.merge(df, df2, on="Name", how="outer")
+* Inner Join (how="inner"): Returns only rows where Name exists in both df and df2.
+  + pd.merge(df, df2, on="Name", how="inner")
+* Left Join (how="left"): Returns all rows from df, including matching data from df2. If no match is found, the corresponding values from df2 will be NaN.
+  + pd.merge(df, df2, on="Name", how="left")
+* Right Join (how="right"): Returns all rows from df2, including matching data from df. If no match is found, the corresponding values from df will be NaN.
+  + pd.merge(df, df2, on="Name", how="right")
+* Outer Join (how="outer"): Returns all rows from both df and df2, regardless of whether a match exists. Missing values are filled with NaN.
+  + pd.merge(df, df2, on="Name", how="outer")
+* Merge two DataFrames using columns with different names, matching the Department column in df with the DepartmentID column in df2.
+  + pd.merge(df, df2, left_on="Department", right_on="DepartmentID", how="inner")
+* Perform a left join using differently named columns, keeping all rows from df and matching records from df2.
+  + pd.merge(df, df2, left_on="Department", right_on="DepartmentID", how="left")
+* Perform a right join using differently named columns, keeping all rows from df2 and matching records from df.
+  + pd.merge(df, df2, left_on="Department", right_on="DepartmentID", how="right")
+* Perform an outer join using differently named columns, keeping all rows from both DataFrames.
+  +pd.merge(df, df2, left_on="Department", right_on="DepartmentID", how="outer")
 
-Note: The on="Name" parameter specifies the common column used to match records, while how determines which rows are included in the merged DataFrame. If duplicate names exist, a merge may produce multiple matching rows.  
+**Note:** The on="Name" parameter specifies the common column used to match records, while how determines which rows are included in the merged DataFrame. If duplicate names exist, a merge may produce multiple matching rows. Use on="ColumnName" when both DataFrames share the same joining column name. Use left_on and right_on when the joining columns have different names.
