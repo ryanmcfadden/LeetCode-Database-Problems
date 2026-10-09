@@ -3,6 +3,7 @@
 # Difficulty: Medium
 import pandas as pd
 
+# Option 1
 def find_managers(employee: pd.DataFrame) -> pd.DataFrame:
     
   counts = employee["managerId"].value_counts()
@@ -19,3 +20,14 @@ def find_managers(employee: pd.DataFrame) -> pd.DataFrame:
       output.extend(manager_name.tolist())  
 
   return pd.DataFrame({"name":output})
+
+# Option 2
+import pandas as pd
+
+def find_managers(employee: pd.DataFrame) -> pd.DataFrame:
+    
+    counts = employee["managerId"].value_counts()
+
+    managers_ids = counts[counts>=5].index
+
+    return employee.loc[employee["id"].isin(managers_ids),["name"]]
