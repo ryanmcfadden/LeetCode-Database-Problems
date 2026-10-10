@@ -1,6 +1,6 @@
 # LeetCode Database Solutions Using Pandas | Pandas Cheat Sheet
 
-**Note:** This cheat sheet is a work in progress and will be regularly updated with new Pandas commands and explanations as I continue solving LeetCode Database problems.
+**Note:** This sheet is a work in progress and will be regularly updated with new Pandas commands and explanations as I continue solving LeetCode Database problems.
 
 This repository contains my solutions to LeetCode Database problems using the Pandas library in Python. It also includes a collection of commonly used Pandas commands that I've applied while solving these problems, along with explanations and examples. Think of it as a handy Pandas cheat sheet that you can refer to when practicing LeetCode problems, learning Pandas, or preparing for technical interviews.
 
@@ -10,6 +10,10 @@ For the examples in this cheat sheet, we'll assume that Pandas has already been 
 * 'City' (string): The city where the person lives.
 * 'Salary' (integer): The person's salary.
 * 'Date' (string): A date stored as text.
+
+## Importing Data
+
+## Exploring Data
 
 ## Selecting Data from a Data Frame
 * Select a single column (Name) from the DataFrame.
