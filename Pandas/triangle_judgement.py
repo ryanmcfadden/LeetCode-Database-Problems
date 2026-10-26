@@ -1,4 +1,4 @@
-# LeetCode: https://leetcode.com/problems/combine-two-tables/
+# LeetCode: https://leetcode.com/problems/triangle-judgement/description/
 
 # Difficulty: Easy
 import pandas as pd
